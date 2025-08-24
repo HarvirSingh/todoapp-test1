@@ -1,0 +1,36 @@
+trigger:
+- main
+
+pool: SelfHostedpool
+
+steps:
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'init'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+    backendServiceArm: 'SecretSP'
+    backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+    backendAzureRmResourceGroupName: 'HAR-RG'
+    backendAzureRmStorageAccountName: 'harpracticestorage'
+    backendAzureRmContainerName: 'statecontainer'
+    backendAzureRmKey: 'terraform.tfstate'
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'validate'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'plan'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+    environmentServiceNameAzureRM: 'SecretSP'
+    environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+- task: TerraformTask@5
+  inputs:
+    provider: 'azurerm'
+    command: 'apply'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+    environmentServiceNameAzureRM: 'SecretSP'
+    environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
