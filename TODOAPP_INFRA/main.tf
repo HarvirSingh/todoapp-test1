@@ -16,3 +16,9 @@ module "resource_group2" {
   resource_group_name     = "rg-htodoapp2"
 }
 
+module "resource_group2" {
+  source                  = "../MODULES/azurerm_resource_group"
+  resource_group_location = "eastus"
+  resource_group_name     = "rg-htodoapp3"
+}
+
