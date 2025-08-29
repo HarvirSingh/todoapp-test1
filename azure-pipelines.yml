@@ -1,7 +1,13 @@
 trigger:
 - main
 - feature/*
-
+parameters:
+- name: ScanningisMandatory
+  displayName: tfsecScanning
+  type: string
+  values:
+   - true
+   - false
 jobs:
   - job: TerraformInitPlanApply
     displayName: This job will run init,plan and apply
@@ -23,6 +29,7 @@ jobs:
          provider: 'azurerm'
          command: 'validate'
          workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+         
      - task: TerraformTask@5
        inputs:
          provider: 'azurerm'
