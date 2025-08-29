@@ -29,6 +29,10 @@ jobs:
          provider: 'azurerm'
          command: 'validate'
          workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+  - job: ScanningJob
+    condition: eq(${{parameters.ScanningisMandatory}},'true')
+    
+          
          
      - task: TerraformTask@5
        inputs:
