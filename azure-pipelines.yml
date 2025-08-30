@@ -77,3 +77,4 @@ jobs:
         workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
         environmentServiceNameAzureRM: 'SecretSP'
         environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+        
