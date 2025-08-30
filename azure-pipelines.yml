@@ -13,6 +13,7 @@ parameters:
 jobs:
   - job: TerraformInitValidate
     displayName: This job will run validatd and init
+    pool: SelfHostedpool
     
     steps:
      - task: TerraformTask@5
@@ -34,6 +35,7 @@ jobs:
   - job: ScanningJob
     condition: eq(${{parameters.ScanningMandatory}},'true')
     displayName: Scanning Wala Job
+    pool: SelfHostedpool
     steps:
     - task: tfsec@1
       inputs:
