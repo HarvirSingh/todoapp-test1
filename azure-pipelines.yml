@@ -63,8 +63,8 @@ jobs:
     steps:
     - task: ManualValidation@1
       inputs:
-        notifyUsers: 'harveer25@gmail.com'
-        approvers: 'harveer25@gmail.com'
+        notifyUsers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
+        approvers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
         onTimeout: 'resume'
   - job: TerraformApply
     displayName: Terraforn Apply
