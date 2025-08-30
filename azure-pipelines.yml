@@ -11,7 +11,7 @@ parameters:
    - true
    - false
 jobs:
-  - job: TerraformInit
+  - job: TerraformInitValidate
     displayName: This job will run validatd and init
     
     steps:
