@@ -71,6 +71,7 @@ stages:
             onTimeout: 'resume'
       - job: TerraformInitApply
         displayName: terraform init plan
+        dependsOn: ManualVaidation
         steps:
         - task: TerraformTask@5
           inputs:
