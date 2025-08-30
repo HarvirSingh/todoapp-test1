@@ -10,91 +10,84 @@ parameters:
   values:
    - true
    - false
-jobs:
-  - job: TerraformInitValidate
-    displayName: This job will run validatd and init
-    pool: SelfHostedpool
+stages:
+ - stage: Build
+   displayName: Build 
+   jobs:
+      - job: TerraformInitValidatePlan
+        displayName: This job will run validate init and plan
+        pool: SelfHostedpool
     
-    steps:
-     - task: TerraformTask@5
-       inputs:
-         provider: 'azurerm'
-         command: 'init'
-         workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-         backendServiceArm: 'SecretSP'
-         backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
-         backendAzureRmResourceGroupName: 'HAR-RG'
-         backendAzureRmStorageAccountName: 'harpracticestorage'
-         backendAzureRmContainerName: 'statecontainer'
-         backendAzureRmKey: 'terraform.tfstate'
-     - task: TerraformTask@5
-       inputs:
-         provider: 'azurerm'
-         command: 'validate'
-         workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-  - job: ScanningJob
-    condition: eq(${{parameters.ScanningMandatory}},'true')
-    displayName: Scanning Wala Job
-    dependsOn: TerraformInitValidate
-    pool: SelfHostedpool
-    steps:
-    - task: tfsec@1
-      inputs:
-        version: 'v1.26.0'
-        dir: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-  - job: TerraformInitPlan
-    displayName: terraform init plan
-    dependsOn: ScanningJob
-    steps:
-    - task: TerraformTask@5
-      inputs:
-        provider: 'azurerm'
-        command: 'init'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-        backendServiceArm: 'SecretSP'
-        backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
-        backendAzureRmResourceGroupName: 'HAR-RG'
-        backendAzureRmStorageAccountName: 'harpracticestorage'
-        backendAzureRmContainerName: 'statecontainer'
-        backendAzureRmKey: 'terraform.tfstate'
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+            backendServiceArm: 'SecretSP'
+            backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+            backendAzureRmResourceGroupName: 'HAR-RG'
+            ackendAzureRmStorageAccountName: 'harpracticestorage'
+            backendAzureRmContainerName: 'statecontainer'
+            backendAzureRmKey: 'terraform.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'validate'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'plan'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+            environmentServiceNameAzureRM: 'SecretSP'
+            environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+ - stage: Scanning
+   displayName: Scanning
+   dependsOn: Build
+   jobs:
+     - job: ScanningJob
+       condition: eq(${{parameters.ScanningMandatory}},'true')
+       displayName: Scanning Wala Job
+       pool: SelfHostedpool
+       steps:
+       - task: tfsec@1
+         inputs:
+           version: 'v1.26.0'
+           dir: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
 
-    - task: TerraformTask@5
-      inputs:
-        provider: 'azurerm'
-        command: 'plan'
-        workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-        environmentServiceNameAzureRM: 'SecretSP'
-        environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
-  - job: ManualValidation
-    displayName: Manual Validation
-    dependsOn: TerraformInitPlan
-    pool: server
-    steps:
-    - task: ManualValidation@1
-      inputs:
-        notifyUsers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
-        approvers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
-        onTimeout: 'resume'
-  - job: TerraformApply
-    displayName: Terraforn Apply
-    dependsOn: ManualValidation     
-    steps:
-     - task: TerraformTask@5
-       inputs:
-         provider: 'azurerm'
-         command: 'init'
-         workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-         backendServiceArm: 'SecretSP'
-         backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
-         backendAzureRmResourceGroupName: 'HAR-RG'
-         backendAzureRmStorageAccountName: 'harpracticestorage'
-         backendAzureRmContainerName: 'statecontainer'
-         backendAzureRmKey: 'terraform.tfstate'    
-     - task: TerraformTask@5
-       inputs:
-          provider: 'azurerm'
-          command: 'apply'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
-          environmentServiceNameAzureRM: 'SecretSP'
-          environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+ - stage: Deploy
+   displayName: Deploy
+   dependsOn: Scanning
+   jobs:
+      - job: ManualVaidation
+        displayName: Manual validation
+        pool: server
+        steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
+            approvers: 'harvir1@tarundevops1outlook.onmicrosoft.com'
+            onTimeout: 'resume'
+      - job: TerraformInitApply
+        displayName: terraform init plan
+        steps:
+        - task: TerraformTask@5
+          inputs:
+           provider: 'azurerm'
+           command: 'init'
+           workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+           backendServiceArm: 'SecretSP'
+           backendAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
+           backendAzureRmResourceGroupName: 'HAR-RG'
+           backendAzureRmStorageAccountName: 'harpracticestorage'
+           backendAzureRmContainerName: 'statecontainer'
+           backendAzureRmKey: 'terraform.tfstate'
+        - task: TerraformTask@5
+          inputs:
+           provider: 'azurerm'
+           command: 'apply'
+           workingDirectory: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
+           environmentServiceNameAzureRM: 'SecretSP'
+           environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
         
