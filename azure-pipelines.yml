@@ -35,6 +35,7 @@ jobs:
   - job: ScanningJob
     condition: eq(${{parameters.ScanningMandatory}},'true')
     displayName: Scanning Wala Job
+    dependsOn: TerraformInitValidate
     pool: SelfHostedpool
     steps:
     - task: tfsec@1
@@ -42,6 +43,8 @@ jobs:
         version: 'v1.26.0'
         dir: '$(System.DefaultWorkingDirectory)/TODOAPP_INFRA'
   - job: TerraformInitPlan
+    displayName: terraform init plan
+    dependsOn: ScanningJob
     steps:
     - task: TerraformTask@5
       inputs:
@@ -64,6 +67,7 @@ jobs:
         environmentAzureRmOverrideSubscriptionID: '81cc1915-8d88-419e-8fa3-0178811761bd'
   - job: ManualValidation
     displayName: Manual Validation
+    dependsOn: TerraformInitPlan
     pool: server
     steps:
     - task: ManualValidation@1
